@@ -1,14 +1,12 @@
 from django.http import HttpResponseRedirect as Redirect, Http404
 from django_openid import consumer, signed
+from django_openid.utils import hex_to_int, int_to_hex
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.mail import send_mail
 
 import hashlib, datetime
 from urlparse import urljoin
-
-hex_to_int = lambda s: int(s, 16)
-int_to_hex = lambda i: hex(i).replace('0x', '').lower().replace('l', '')
 
 # TODO: prevent multiple associations of same OpenID
 
@@ -31,6 +29,7 @@ class AuthConsumer(consumer.SessionConsumer):
     recovery_complete_template = 'django_openid/recovery_complete.html'
     
     recovery_email_from = None
+    recovery_email_subject = 'Recover your account'
     
     password_logins_enabled = True
     account_recovery_enabled = True
@@ -45,6 +44,8 @@ class AuthConsumer(consumer.SessionConsumer):
     bad_password_message = 'Incorrect username or password'
     invalid_token_message = 'Invalid token'
     recovery_email_sent_message = 'Check your mail for further instructions'
+    recovery_not_found_message = 'No matching user was found'
+    recovery_multiple_found_message = 'Try entering your username instead'
     r_user_not_found_message = 'That user account does not exist'
     
     account_recovery_url = None
@@ -67,8 +68,8 @@ class AuthConsumer(consumer.SessionConsumer):
         )
         
         if self.password_logins_enabled:
-            response.template = self.login_plus_password_template
-            response.context.update({
+            response.template_name = self.login_plus_password_template
+            response.template_context.update({
                 'account_recovery': self.account_recovery_enabled and (
                     self.account_recovery_url or (request.path + 'recover/')
                 ),
@@ -248,7 +249,7 @@ class AuthConsumer(consumer.SessionConsumer):
         return response
     
     def need_authenticated_user(self, request):
-        return self.show_error(self.need_authenticated_user_message)
+        return self.show_error(request, self.need_authenticated_user_message)
     
     def do_associations(self, request):
         "Interface for managing your account's associated OpenIDs"
@@ -305,7 +306,7 @@ class AuthConsumer(consumer.SessionConsumer):
                 users = self.lookup_users_by_email(submitted)
                 if users:
                     if len(users) > 1:
-                        extra_message = 'Try entering your username instead'
+                        extra_message = self.recovery_multiple_found_message
                         user = None
                     else:
                         user = users[0]
@@ -314,6 +315,8 @@ class AuthConsumer(consumer.SessionConsumer):
                 return self.show_message(
                     request, 'E-mail sent', self.recovery_email_sent_message
                 )
+            else:
+                extra_message = self.recovery_not_found_message
         return self.render(request, self.recover_template, {
             'action': request.path,
             'message': extra_message,
@@ -373,7 +376,7 @@ class AuthConsumer(consumer.SessionConsumer):
             'associate_url': urljoin(request.path, '../../associations/'),
             'user': user,
         })
-    do_r.urlregex = '^r/([\w.]+)/$'
+    do_r.urlregex = '^r/([^/]+)/$'
     
     def generate_recovery_code(self, user):
         # Code is {hex-days}.{hex-userid}.{signature}
@@ -394,7 +397,7 @@ class AuthConsumer(consumer.SessionConsumer):
             'code': code,
             'user': user,
         }).content
-        send_email(
+        send_mail(
             subject = self.recovery_email_subject,
             message = email_body,
             from_email = self.recovery_email_from or \

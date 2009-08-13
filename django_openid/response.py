@@ -4,8 +4,11 @@ from django.template import loader, Context, RequestContext
 class SimpleTemplateResponse(HttpResponse):
     
     def __init__(self, template, context, *args, **kwargs):
-        self.template = template
-        self.context = context
+        # These two properties were originally called 'template' and 'context'
+        # but django.test.client.Client was clobbering those leading to really
+        # tricky-to-debug problems
+        self.template_name = template
+        self.template_context = context
         self.baked = False
         super(SimpleTemplateResponse, self).__init__(*args, **kwargs)
     
@@ -26,8 +29,8 @@ class SimpleTemplateResponse(HttpResponse):
             return Context(context)
     
     def render(self):
-        template = self.resolve_template(self.template)
-        context = self.resolve_context(self.context)
+        template = self.resolve_template(self.template_name)
+        context = self.resolve_context(self.template_context)
         content = template.render(context)
         return content
     
@@ -64,7 +67,10 @@ class SimpleTemplateResponse(HttpResponse):
 class TemplateResponse(SimpleTemplateResponse):
     
     def __init__(self, request, template, context, *args, **kwargs):
-        self.request = request
+        # self.request gets over-written by django.test.client.Client - and 
+        # unlike template_context and template_name the _request should not 
+        # be considered part of the public API.
+        self._request = request
         super(TemplateResponse, self).__init__(
             template, context, *args, **kwargs
         )
@@ -73,7 +79,7 @@ class TemplateResponse(SimpleTemplateResponse):
         if isinstance(context, Context):
             return context
         else:
-            return RequestContext(self.request, context)
+            return RequestContext(self._request, context)
 
 # Even less verbose alias:
 render = TemplateResponse

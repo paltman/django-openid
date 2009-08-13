@@ -10,8 +10,12 @@ django_openid
    
    installation
    accepting-openid
+   auth-integration
    
    api/index
+   
+   registration-flow
+   design-notes
 
 ========
 Features
