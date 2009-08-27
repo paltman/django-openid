@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.mail import send_mail
 
-import hashlib, datetime
+import datetime
 from urlparse import urljoin
 
 # TODO: prevent multiple associations of same OpenID
