@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='django-openid',
-    version='0.2.0',
+    version='0.2.1',
     description='OpenID tools for Django',
     author='Simon Willison',
     author_email='simon@simonwillison.net',
