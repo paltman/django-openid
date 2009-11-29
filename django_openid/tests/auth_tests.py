@@ -104,10 +104,12 @@ class RegistrationTest(AuthTestBase):
         # Now extract and click that link
         msg = mail.outbox[0]
         self.assertEqual(msg.to, [u'test@example.com'])
+        link_prefix = 'http://testserver'
         link = [
             l.strip() for l in msg.body.splitlines()
-            if l.startswith('http://testserver/')
+            if l.startswith(link_prefix)
         ][0]
+        link = link.replace(link_prefix, '')
         response = self.client.get(link)
         self.assertEqual(
             response.template_name, 'django_openid/register_complete.html'
@@ -142,10 +144,13 @@ class AccountRecoveryTest(AuthTestBase):
         self.assertEqual(len(mail.outbox), 1)
         msg = mail.outbox[0]
         self.assertEqual(msg.to, [u'noopenids@example.com'])
+        
+        link_prefix = 'http://testserver'
         link = [
             l.strip() for l in msg.body.splitlines()
-            if l.startswith('http://testserver/')
+            if l.startswith(link_prefix)
         ][0]
+        link = link.replace(link_prefix, '')
         
         # Tampering with the link should cause it to fail
         bits = link.split('.')
