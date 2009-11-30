@@ -9,6 +9,8 @@ from django_openid import signed
 
 from django.contrib.auth.models import User
 from django.utils.decorators import decorator_from_middleware
+
+from base import TestCaseBase
 from request_factory import RequestFactory
 from openid_mocks import *
 
@@ -16,7 +18,7 @@ from openid.consumer import consumer as janrain_consumer
 
 rf = RequestFactory()
 
-class AuthTestBase(TestCase):
+class AuthTestBase(TestCaseBase):
     urls = 'django_openid.tests.auth_test_urls'
     
     def setUp(self):
@@ -28,6 +30,8 @@ class AuthTestBase(TestCase):
             'django.contrib.auth.middleware.AuthenticationMiddleware',
             'django_openid.registration.RegistrationConsumer',
         )
+        
+        super(AuthTestBase, self).setUp()
         
         # Create user accounts associated with OpenIDs
         self.no_openids = User.objects.create(
@@ -44,6 +48,7 @@ class AuthTestBase(TestCase):
     
     def tearDown(self):
         settings.MIDDLEWARE_CLASSES = self.old_middleware
+        super(AuthTestBase, self).tearDown()
 
 class AuthTest(AuthTestBase):
     
