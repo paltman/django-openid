@@ -6,7 +6,7 @@ setup(
     description='OpenID tools for Django',
     author='Simon Willison',
     author_email='simon@simonwillison.net',
-    url='http://code.google.com/p/django-openid/',
+    url='http://github.com/simonw/django-openid/',
     packages=find_packages(),
     classifiers=[
         'Development Status :: 3 - Alpha',
