@@ -137,7 +137,7 @@ class AccountRecoveryTest(AuthTestBase):
             'recover': 'does-not-exist'
         })
         self.assertEqual(
-            response.template_context['message'],
+            response.context_data['message'],
             RegistrationConsumer.recovery_not_found_message
         )
         
