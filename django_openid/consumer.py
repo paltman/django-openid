@@ -12,13 +12,13 @@ urlpatterns = patterns('',
 """
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import render_to_response
+from django.template.response import TemplateResponse
 from openid.consumer import consumer
 from openid.consumer.discover import DiscoveryFailure
 from openid.yadis import xri
 from django_openid.models import DjangoOpenIDStore
 from django_openid.utils import OpenID, Router
 from django_openid import signed
-from django_openid.response import TemplateResponse
 
 class SessionPersist(object):
     def get_user_session(self, request):

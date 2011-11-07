@@ -1,11 +1,11 @@
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import render_to_response
+from django.template.response import TemplateResponse
 from openid.server.server import Server
 from openid.extensions import sreg
 from django_openid.models import DjangoOpenIDStore
 from django_openid import signed
-from django_openid.response import TemplateResponse
 
 class Provider(object):
     """
