@@ -1,6 +1,8 @@
+import md5
+
 from django.db import models
 from django.conf import settings
-from django.utils.hashcompat import md5_constructor
+
 from openid.store.interface import OpenIDStore
 import openid.store
 from openid.association import Association as OIDAssociation
@@ -99,7 +101,7 @@ class DjangoOpenIDStore(OpenIDStore):
     
     def cleanupNonce(self):
         Nonce.objects.filter(
-            timestamp__lt = (int(time.time()) - nonce.SKEW)
+            timestamp__lt=(int(time.time()) - openid.store.nonce.SKEW)
         ).delete()
     
     def cleaupAssociations(self):
@@ -109,7 +111,7 @@ class DjangoOpenIDStore(OpenIDStore):
     
     def getAuthKey(self):
         # Use first AUTH_KEY_LEN characters of md5 hash of SECRET_KEY
-        return md5_constructor.new(settings.SECRET_KEY).hexdigest()[:self.AUTH_KEY_LEN]
+        return md5.new(settings.SECRET_KEY).hexdigest()[:self.AUTH_KEY_LEN]
     
     def isDumb(self):
         return False
