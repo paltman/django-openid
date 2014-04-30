@@ -43,7 +43,7 @@ rf = RequestFactory()
 print router(rf.get('/bar/'))
 """
 
-from django.conf.urls.defaults import patterns
+from django.conf.urls import patterns
 from django.core import urlresolvers
 
 class Router(object):
